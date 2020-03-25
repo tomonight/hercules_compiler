@@ -1,0 +1,51 @@
+package main
+import "oscmd"
+import "mysql"
+import "fmt"
+import "ccc"
+import "strings"
+//初始化导入的实例的服务
+//password -- 节点ssh password
+//port -- 节点ssh port
+//mysqlPath ---mysql文件路径
+//socketPath --- socket文件路径
+//confPath --- conf文件路径
+
+var t2="ccc"
+if t2=="ccc" && t2 == "ddd" && t3== "eee"{
+   var pri = t3(1,2)
+   fmt.print(t1)
+}else if t2=="ddd" || t3 == "eeee"{
+    fmt.println(t2)
+}else{
+    return
+}
+
+parallel{
+    os.setTarget(t1)
+    os.setExecState(0,1)
+    sleep(30000)
+}
+parallel{
+    os.setTarget(t1)
+    os.setExecState(0,1)
+    sleep(30000)
+}
+
+wait
+
+t3(c,d)
+
+func t3(a string,b int){
+    var m = oscmd.Printcc(a,b,3)
+    for b{
+        if i.c==2{
+            break
+        }
+        if i.d == 1{
+            continue
+        }
+    }
+    oscmd.Printdd(a,b,3)
+    return m
+}

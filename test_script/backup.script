@@ -1,0 +1,100 @@
+package main
+import "oscmd"
+import "mysql"
+import "fmt"
+import "ccc"
+import "strings"
+var a= 12
+//var d = 3
+//var t = a+d*(3 - 1) * 3
+var c = t5(12,3)
+print(c)
+//var e=t3(a,d)
+//var c="123" 
+//var e="333"
+//print(c+e) 
+//oscmd.t2(a,d)
+
+
+func t5(mm int,nn int){
+    for var i=1;i<mm;i++{
+        print("i====",i)
+        if i == 1
+        {
+            print("123")
+            return 3
+        }
+    }
+    return
+}
+
+
+func t4(mm int,nn int){
+    print("111111111111")
+    if mm == 12
+    {
+        print("22222222222")
+        var pp = 33
+        if true
+        {
+             print("33333333333")
+            pp=44
+        }
+        print("pp======",pp)
+        a = 13
+    }
+    print("123---",mm)
+    return mm
+    for var i=1;i<mm;i++
+    {
+        print(i)
+        if i == 10
+        {
+            return mm * nn
+        }
+    }
+}
+
+func t3(mm int,nn int){
+    if mm == 12
+    {
+        if nn == 3
+        {
+            print("123333333")
+        }
+        return t4(mm,nn)
+        print("8888888888")
+    }
+     print("444444444444")
+    var kk = 44
+    nn --
+    print(",,,.,.",nn)
+    if mm == 1
+    {
+        var cc = mm + 1
+        var dd = nn + 1
+        print(cc+dd)
+    }
+    else if nn == 4
+    {
+        print("kkksb")
+    }
+    else{
+        var cc = 33
+        var dd = 44
+        print("cc==",cc)
+        print("mm==",mm)
+        print("a==",a)
+        print("cmmmmm")
+        if cc == 33
+        {
+            var oo = 55
+            var qq = 66
+            print("oo===",oo)
+            print("dd===",dd)
+            print("a===",a+1)
+            print("-----------------------------------------")
+            print(t4(oo,a))
+        }
+    }
+}
