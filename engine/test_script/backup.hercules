@@ -1,0 +1,12 @@
+
+
+#ffffffff
+//wwwwwwww
+print("wwwwwwwwwww","-----","ccccccc")
+var master = connect("ssh","192.168.11.181",22,"root","root123")
+setTarget(master)
+var master1 = connect("ssh","192.168.11.181",22,"root","root123")
+setTarget(master1)
+setRunmode(10)
+
+c("uname1")

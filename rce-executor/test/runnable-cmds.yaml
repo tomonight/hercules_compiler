@@ -1,0 +1,7 @@
+commands:
+  - name: exit.zero
+    exec: [/usr/bin/true]
+  - name: exit.one
+    exec:
+      - /bin/false
+      - some-arg

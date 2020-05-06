@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.enmo.dbaas.grpc.v3.command";
+option java_outer_classname = "CommandV3ServerProto";
+
+import "commonV3.proto";
+
+package command;
+
+service CommandV3Server {
+
+  //服务流式RPC,接受到请求，先返回是否接受到的结果，然后继续执行，最后把执行结果返回
+  rpc executeCommand(CommandV3) returns (stream ResultMessageV3) {}  
+  
+}
+
+message CommandV3 {
+ //agent Ip地址
+  string ip = 1;
+  //agent port地址
+  int32 port = 2;
+  //命令内容
+  string commandContent = 3;
+  string commandType = 4;
+  string requestId = 5;
+  string username = 6;
+  string passwd = 7;
+    //超时时间
+  int64 timeOut = 8;
+}
+

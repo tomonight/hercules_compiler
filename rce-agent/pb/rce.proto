@@ -1,0 +1,59 @@
+// Copyright 2017 Square, Inc.
+
+syntax = "proto3";
+
+package rce;
+
+service RCEAgent {
+  // Start a command and immediately return its ID. Be sure to call Wait or Stop
+  // to reap the command, else the agent will effectively leak memory by holding
+  // unreaped commands. A command is considered running until reaped.
+  rpc Start(Command) returns (ID) {}
+
+  // Wait for a command to complete or be stopped, reap it, and return its final status.
+  rpc Wait(ID) returns (Status) {}
+
+  // Get the status of a command if it hasn't been reaped by calling Wait or Stop.
+  rpc GetStatus(ID) returns (Status) {}
+
+  // Stop then reap a command by sending it a SIGTERM signal. 
+  rpc Stop(ID) returns (Empty) {}
+
+  // Return a list of all running (not reaped) commands by ID.
+  rpc Running(Empty) returns (stream ID) {}
+}
+
+message Empty {}
+
+enum STATE {
+  UNKNOWN     = 0;
+  PENDING     = 1;
+  RUNNING     = 2;
+  COMPLETE    = 3;
+  FAIL        = 4;
+  TIMEOUT     = 5;
+  STOPPED     = 6;
+}
+
+message Status {
+  string              ID =  1;
+  string            Name =  2;
+  STATE            State =  3;
+  int64              PID =  4;
+  int64        StartTime =  5;
+  int64         StopTime =  6;
+  int64         ExitCode =  7;
+  repeated string   Args =  8;
+  repeated string Stdout =  9;
+  repeated string Stderr = 10;
+  string           Error = 11;
+}
+
+message ID {
+  string ID = 1;
+}
+
+message Command {
+  string               Name = 1;
+  repeated string Arguments = 2;
+}

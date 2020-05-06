@@ -1,0 +1,29 @@
+
+
+
+
+
+func b(str)
+{
+    print("aaaaa")
+    var dir = "mkdir " + str
+    print(dir)
+    var mm = oscmd.AddParamsToConf(command:dir)
+    print(mm["test"])
+     print("bbbbbb")
+}
+
+
+const ct = "886"
+
+func c(str)
+{
+    d(str)
+}
+
+func d(str)
+{
+    var mm = oscmd.AddParamsToConf(command:str)
+    print(mm["test"])
+     print("bbbbbb")
+}

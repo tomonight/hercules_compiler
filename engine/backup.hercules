@@ -1,0 +1,35 @@
+
+
+
+
+var master = connect("ssh","192.168.11.181",22,"root","root123")
+setTarget(master)
+setRunmode(11)
+b("/home/mmmm" dd)
+var dd = oscmd.AddParamsToConf(command:"uname")
+print(dd["test"])
+
+var slave = connect("ssh","192.168.11.161",22,"root","root123")
+setTarget(slave)
+var cc = oscmd.AddParamsToConf(command:"mkdir /home/ccc")
+print(cc["test"])
+b("/home/mmmm")
+var c = a(123,33)
+print(c)
+
+
+func a(q,p)
+{
+    q = q * 2
+    return q + p
+}
+
+func b(str)
+{
+    print("aaaaa")
+    var dir = "mkdir " + str
+    print(dir)
+    var mm = oscmd.AddParamsToConf(command:dir)
+    print(mm["test"])
+     print("bbbbbb")
+}
