@@ -101,7 +101,7 @@ func ParseFiles(filenames []string) uint {
 
 func (p *noder) yyerrorpos(pos syntax.Pos, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
-	fmt.Println("parse error at  %d:%d,error:", pos.Line(), pos.Col(), msg)
+	fmt.Println(fmt.Sprintf("parse error at  %d:%d,error:%s", pos.Line(), pos.Col(), msg))
 }
 
 // error is called concurrently if files are parsed concurrently.

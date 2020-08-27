@@ -46,6 +46,11 @@ func basicLit(lit *syntax.BasicLit) interface{} {
 		return intV
 	case syntax.StringLit:
 		return strings.Trim(lit.Value, "\"")
+	case syntax.BoolLit:
+		if lit.Value == "true" {
+			return true
+		}
+		return false
 	}
 	return nil
 }
@@ -246,7 +251,7 @@ func (e *Engineer) operationExpr(expr *syntax.Operation) (interface{}, error) {
 		return mathCalc(xv, yv, expr.Op)
 	}
 	if expr.Op == syntax.Add {
-		return xv.(string) + yv.(string), nil
+		return fmt.Sprintf("%v", xv) + fmt.Sprintf("%v", yv), nil
 	}
 	return nil, nil
 }
@@ -483,53 +488,17 @@ func assembleMapCompositeLit(params map[string]string) *syntax.CompositeLit {
 	return lit
 }
 
-func assembleMapCompositeLitWithInterface(params map[string]interface{}) (*syntax.CompositeLit, error) {
-	lit := &syntax.CompositeLit{}
-	t := &syntax.MapType{}
-	lit.Type = t
-	lit.NKeys = len(params)
-	lit.ElemList = []syntax.Expr{}
-	for k, v := range params {
-		kv := &syntax.KeyValueExpr{}
-		kv.Key = &syntax.Name{Value: k}
-		value, err := getBasicLit(v)
-		if err != nil {
-			return nil, err
-		}
-		kv.Value = value
-		lit.ElemList = append(lit.ElemList, kv)
-	}
-	return lit, nil
-}
-
 func getBasicLit(value interface{}) (*syntax.BasicLit, error) {
 	lit := &syntax.BasicLit{}
 	switch t := value.(type) {
 	case string:
 		lit = &syntax.BasicLit{Value: t, Kind: syntax.StringLit}
 	case int, int16, int32, int64, int8, uint, uint16, uint32, uint64, uint8, float32, float64:
-		lit = &syntax.BasicLit{Value: fmt.Sprintf("%d", t), Kind: syntax.IntLit}
+		lit = &syntax.BasicLit{Value: fmt.Sprintf("%v", t), Kind: syntax.IntLit}
+	case bool:
+		lit = &syntax.BasicLit{Value: fmt.Sprintf("%v", t), Kind: syntax.BoolLit}
 	default:
 		return nil, fmt.Errorf("unsupport basic lit ")
-	}
-	return lit, nil
-}
-
-func assembleListMapCompositeLit(params []map[string]interface{}) (*syntax.CompositeLit, error) {
-	lit := &syntax.CompositeLit{}
-	list := &syntax.SliceType{}
-	lit.Type = list
-	lit.NKeys = len(params)
-	lit.ElemList = []syntax.Expr{}
-	for _, v := range params {
-		eachMap, err := assembleMapCompositeLitWithInterface(v)
-		if err != nil {
-			return nil, err
-		}
-		// kv := &syntax.KeyValueExpr{}
-		// kv.Key = &syntax.Name{Value: k}
-		// kv.Value = &syntax.BasicLit{Value: v, Kind: syntax.StringLit}
-		lit.ElemList = append(lit.ElemList, eachMap)
 	}
 	return lit, nil
 }

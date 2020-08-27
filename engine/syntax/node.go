@@ -1,21 +1,9 @@
-// Copyright 2016 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package syntax
 
 // ----------------------------------------------------------------------------
 // Nodes
 
 type Node interface {
-	// Pos() returns the position associated with the node as follows:
-	// 1) The position of a node representing a terminal syntax production
-	//    (Name, BasicLit, etc.) is the position of the respective production
-	//    in the source.
-	// 2) The position of a node representing a non-terminal production
-	//    (IndexExpr, IfStmt, etc.) is the position of a token uniquely
-	//    associated with that production; usually the left-most one
-	//    ('[' for IndexExpr, 'if' for IfStmt, etc.)
 	Pos() Pos
 	aNode()
 }

@@ -31,6 +31,7 @@ type Engineer struct {
 	parse       bool
 	done        bool
 	execStatus  int
+	setStatus   bool
 	nopauseC    chan struct{}
 	parellelC   chan struct{}
 	executor    *engineExecutor
@@ -135,14 +136,14 @@ func (e *Engineer) addBodyParam(params interface{}) error {
 		}
 		var val *Var
 		switch t := value.(type) {
-		case string, int, int16, int32, int64, int8, uint, uint16, uint32, uint64, uint8, float32, float64:
+		case bool, string, int, int16, int32, int64, int8, uint, uint16, uint32, uint64, uint8, float32, float64:
 			val = &Var{
 				fn:    nil,
 				key:   key,
 				value: t,
 			}
 		case []interface{}:
-			lm, err := checkInterface(t)
+			lm, err := assembleListMapCompositeLit(value.([]interface{}))
 			if err != nil {
 				return err
 			}
@@ -150,6 +151,16 @@ func (e *Engineer) addBodyParam(params interface{}) error {
 				fn:    nil,
 				key:   key,
 				value: lm,
+			}
+		case map[string]interface{}:
+			lit, err := assembleMapCompositeLitWithInterface(value.(map[string]interface{}))
+			if err != nil {
+				return err
+			}
+			val = &Var{
+				fn:    nil,
+				key:   key,
+				value: lit,
 			}
 		default:
 			fmt.Println("unsupport param type,only support key:value,value only support list[map],or string or int")
@@ -160,24 +171,64 @@ func (e *Engineer) addBodyParam(params interface{}) error {
 	return nil
 }
 
-func checkInterface(data []interface{}) (*syntax.CompositeLit, error) {
-	list := []map[string]interface{}{}
-	for _, v := range data {
-		switch t := v.(type) {
-		case map[string]interface{}:
-			list = append(list, t)
-		default:
-			return nil, fmt.Errorf("unsupport param type,only support key:value,value only support list[map],or string or int")
-		}
+func assembleInterfaceParams(data interface{}) (syntax.Expr, error) {
+	switch data.(type) {
+	case bool, string, int, int16, int32, int64, int8, uint, uint16, uint32, uint64, uint8, float32, float64:
+		return getBasicLit(data)
+	case map[string]interface{}:
+		dataV := data.(map[string]interface{})
+		return assembleMapCompositeLitWithInterface(dataV)
+	case []interface{}:
+
 	}
-	return assembleListMapCompositeLit(list)
+	return nil, fmt.Errorf("unsupport param type")
+}
+
+func assembleMapCompositeLitWithInterface(params map[string]interface{}) (*syntax.CompositeLit, error) {
+	lit := &syntax.CompositeLit{}
+	t := &syntax.MapType{}
+	lit.Type = t
+	lit.NKeys = len(params)
+	lit.ElemList = []syntax.Expr{}
+	for k, v := range params {
+		kv := &syntax.KeyValueExpr{}
+		kv.Key = &syntax.Name{Value: k}
+		value, err := assembleInterfaceParams(v)
+		if err != nil {
+			return nil, err
+		}
+		kv.Value = value
+		lit.ElemList = append(lit.ElemList, kv)
+	}
+	return lit, nil
+}
+
+func assembleListMapCompositeLit(params []interface{}) (*syntax.CompositeLit, error) {
+	lit := &syntax.CompositeLit{}
+	list := &syntax.SliceType{}
+	lit.Type = list
+	lit.NKeys = len(params)
+	lit.ElemList = []syntax.Expr{}
+	for _, v := range params {
+		eachMap, err := assembleInterfaceParams(v)
+		if err != nil {
+			return nil, err
+		}
+		// kv := &syntax.KeyValueExpr{}
+		// kv.Key = &syntax.Name{Value: k}
+		// kv.Value = &syntax.BasicLit{Value: v, Kind: syntax.StringLit}
+		lit.ElemList = append(lit.ElemList, eachMap)
+	}
+	return lit, nil
 }
 
 func paramValid(params interface{}) ([]byte, error) {
 	switch p := params.(type) {
 	case string:
-		if strings.HasPrefix(p, "{") && strings.HasSuffix(p, "}") {
-			return []byte(p), nil
+		pstr := strings.Trim(strings.Trim(strings.Trim(p, "\n\t"), "\n"), "")
+		fmt.Println(pstr[0:1])
+		if strings.HasPrefix(pstr, "{") && strings.HasSuffix(pstr, "}") {
+			return []byte(pstr), nil
 		}
 	case []byte:
 		return p, nil

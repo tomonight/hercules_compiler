@@ -129,7 +129,8 @@ func (e *Engineer) checkStatus() bool {
 
 //checkPause or done
 func (e *Engineer) checkError(pos syntax.Pos, err error) error {
-	if err == nil && !e._EFS_STOP() {
+	if e.setStatus || (err == nil && !e._EFS_STOP()) {
+		e.setStatus = false
 		return nil
 	}
 
@@ -150,7 +151,6 @@ func (e *Engineer) checkError(pos syntax.Pos, err error) error {
 	}
 	errL = append(errL, "line %d:")
 	errMsg := fmt.Sprintf(strings.Join(errL, ""), host, pos.Line())
-	fmt.Println(errMsg)
 	if err == nil && e._EFS_STOP() {
 		e.done = true
 		msg := "script execute successful but end with runmode>=10"
@@ -175,4 +175,3 @@ func (e *Engineer) _EFF_STOP() bool {
 func (e *Engineer) _EFS_STOP() bool {
 	return e.execStatus&(1<<1) == 0
 }
-

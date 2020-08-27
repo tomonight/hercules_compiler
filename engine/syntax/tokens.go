@@ -99,6 +99,7 @@ const (
 	ImagLit
 	RuneLit
 	StringLit
+	BoolLit
 )
 
 type Operator uint

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"hercules_compiler/rce-executor/executor"
 	"hercules_compiler/rce-executor/log"
+	"hercules_compiler/rce-executor/modules"
 	"hercules_compiler/rce-executor/modules/oscmd"
 	"hercules_compiler/rce-executor/modules/osservice"
 	"hercules_compiler/rce-executor/utils"
-	"hercules_compiler/rce-executor/modules"
 	"regexp"
 	"strings"
 	"time"
@@ -635,6 +635,7 @@ func InstanceAliveWithCode(e executor.Executor, params *executor.ExecutorCmdPara
 	er.ExitCode = 0
 	er.Changed = false
 	er.Message = "mysql instance is not alive"
+	fmt.Println("===========================", false)
 	er.ResultData["alive"] = "false"
 	return er
 }

@@ -55,6 +55,8 @@ type parser struct {
 	fnest  int    // function nesting level (for error handling)
 	xnest  int    // expression nesting level (for complit ambiguity resolution)
 	indent []byte // tracing support
+
+	notForwardFlag bool //flag not forward semi , adapt semi - else
 }
 
 func (p *parser) init(file *PosBase, r io.Reader, errh ErrorHandler) {
@@ -203,12 +205,13 @@ func (p *parser) fileOrNil() *File {
 			}
 			l = append(l, s)
 			// ";" is optional before "}"
-			if !p.got(_Semi) && p.tok != _Rbrace {
+			if !p.got(_Semi) && p.tok != _Rbrace && !p.notForwardFlag {
 				// p.syntaxError("at end of statement")
 				p.advance(_Semi, _Rbrace, _Case, _Default)
 				p.got(_Semi) // avoid spurious empty statement
 			}
 			// p.advance(_Const, _Type, _Var, _Func)
+			p.notForwardFlag = false
 			continue
 		}
 
@@ -565,7 +568,6 @@ func (p *parser) expr() Expr {
 // Expression = UnaryExpr | Expression binary_op Expression .
 func (p *parser) binaryExpr(prec int) Expr {
 	// don't trace binaryExpr - only leads to overly nested trace output
-
 	x := p.unaryExpr()
 	for (p.tok == _Operator || p.tok == _Star) && p.prec > prec {
 		t := new(Operation)
@@ -1302,7 +1304,6 @@ func (p *parser) ifStmt() *IfStmt {
 	s.pos = p.pos()
 	s.Init, s.Cond, _ = p.header(_If)
 	s.Then = p.blockStmt("if clause")
-
 	if p.got(_Else) || (p.got(_Semi) && p.got(_Else)) {
 		switch p.tok {
 		case _If:
@@ -1314,7 +1315,7 @@ func (p *parser) ifStmt() *IfStmt {
 			p.advance(_Name, _Rbrace)
 		}
 	}
-
+	p.notForwardFlag = true
 	return s
 }
 

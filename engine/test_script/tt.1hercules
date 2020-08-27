@@ -27,3 +27,4 @@ func d(str)
     print(mm["test"])
      print("bbbbbb")
 }
+

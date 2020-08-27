@@ -91,6 +91,7 @@ func (o *oprint) call(e *Engineer, args []syntax.Expr) (interface{}, error) {
 		fomats = append(fomats, v)
 	}
 	e.edone(fmt.Sprint(fomats...))
+	fmt.Println(fomats)
 	return nil, nil
 }
 
@@ -331,6 +332,7 @@ func (o *osetRunMode) call(e *Engineer, args []syntax.Expr) (interface{}, error)
 		return nil, errors.New("unexpect mode value")
 	}
 	e.execStatus = vt
+	e.setStatus = true
 	return nil, nil
 }
 

@@ -8,6 +8,7 @@ import (
 //decl statement runner
 func (e *Engineer) walkAssign(stmt *syntax.AssignStmt) (interface{}, error) {
 	if stmt.Op == 0 {
+
 		return e.assignOp0(stmt.Lhs, stmt.Rhs)
 	}
 	return e.assignOpNot0(stmt)

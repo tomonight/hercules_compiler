@@ -8,7 +8,6 @@ import (
 //decl statement runner
 //only support var declire
 func (e *Engineer) walkDecl(stmt *syntax.DeclStmt) (interface{}, error) {
-
 	switch de := stmt.Decl.(type) {
 	case *syntax.VarDecl:
 		return e.decl(de)

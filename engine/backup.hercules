@@ -1,35 +1,169 @@
+#安装单实例mysql
+#host -- 节点ssh host
+#username -- 节点ssh username
+#password -- 节点ssh password
+#port -- 节点ssh port
+#dataBaseDir -- 数据库基础目录: /mysql/testdb/testdb1
+#mysqlConfDir -- mysql配置文件目录 /mysql/testdb/conf
+#mysqlParameterFile -- my.cnf文件路径: /mysql/testdb/testdb1/conf/my.cnf
+#mysqlPath -- mysql路径: /mysql/testdb/testdb1/mysql-5.7.15
+#socketFile -- socket文件: /tmp/mysql3366.sock
+#url -- 文件地址: http://192.168.0.185:7981/mysql-5.7.15-linux-glibc2.5-x86_64.tar.gz
+#filename -- 文件名: mysql-5.7.15-linux-glibc2.5-x86_64.tar.gz
+#md5 文件md5 -- 用于校验文件的md5值
+#unzippedFilename -- 解压后文件名: mysql-5.7.15-linux-glibc2.5-x86_64
+#confFileText -- 配置文件内容
+#mysqlDataDir -- 数据目录: /mysql/testdb/testdb1/data
+#mysqlPort -- 端口: 3306
+#mysqlRootPassword -- mysql root密码
+#serverId -- 服务id
+#instanceName -- 实例名称
+#cpuLimitValue -- CPU限制
+#memoryLimitValue -- 内存限制
+#basicPath -- 安装基础目录
+#downloadPath -- 下载目录 $basicPath/zmysql/download 
+#monitorUser -- 监控用户名
+#monitorPassword -- 监控密码
+#backupUser -- 备份用户名
+#backupPassword -- 备份密码
+#clusterID 集群ID
 
+print(instanceList[0]["target"]["host"])
+var installInstance = instanceList[0]
+var host = installInstance["target"]["host"]
+var username = installInstance["target"]["username"]
+var port = installInstance["target"]["port"]
+var password = installInstance["target"]
+var target = installInstance["target"]
+var mysqlPath = installInstance["install_params"]["instance_dir"]+ "/mysql"
 
+var mysqlConfDir = installInstance["install_params"]["conf_dir"]
+var mysqlParameterFile = mysqlConfDir + "/my.cnf"
+var mysqlPort = installInstance["mysql_port"]
+var socketFile = installInstance["socketFilePath"]
+var dbName = clusterName
+var instanceName = installInstance["instance_name"]
+var serverId = installInstance["install_params"]["server_id"]
+var dataBaseDir = installInstance["install_params"]["instance_dir"]
 
+var basicPath = installInstance["install_params"]["basic_dir"]
+var clusterID = installClusterID
+var url = mysqlPackageURL
+var filename = "mysql-8.0.14-linux-glibc2.12-x86_64.tar.xz"
+var unzippedFilename = "mysql-8.0.14-linux-glibc2.12-x86_64"
+ var mysqlDataDir = installInstance["install_params"]["datadir"]
 
-var master = connect("ssh","192.168.11.181",22,"root","root123")
-setTarget(master)
-setRunmode(11)
-b("/home/mmmm" dd)
-var dd = oscmd.AddParamsToConf(command:"uname")
-print(dd["test"])
+var mysqlUser = "root"
+var mysqlRootPassword = "root123"
+var target1 = connect(protocol:"ssh",host:host,username:username,port:port,password:target["password"])
+setTarget(target1)
+setRunmode(1)
+mysql.MySQLInstanceAlive(mysqlPath:mysqlPath,socketFile:socketFile,user:mysqlUser)
+setRunmode(10)
 
-var slave = connect("ssh","192.168.11.161",22,"root","root123")
-setTarget(slave)
-var cc = oscmd.AddParamsToConf(command:"mkdir /home/ccc")
-print(cc["test"])
-b("/home/mmmm")
-var c = a(123,33)
-print(c)
-
-
-func a(q,p)
-{
-    q = q * 2
-    return q + p
+#获取系统版本
+var osversion = osservice.GetOsVersion()["version"]
+print(osversion)
+#备份已有yum源
+if true{
+    # oscmd.BackupYumRepos
+    if osversion == "6"{
+    mybaseurl = mybaseurl/6
+    print(mybaseurl)
+    var yumRepoText="[MyData]\nname=MyData\nbaseurl:mybaseurl}\ngpgcheck=0"
+     oscmd.Touch(path:"/etc/yum.repos.d/MyData.repo")
+     oscmd.TextToFile(filename:"/etc/yum.repos.d/MyData.repo",outText:yumRepoText)
+    }
+}
+var packages="unzip libaio libaio-devel"
+if osversion == "6"{
+   #解决centos6非最小化安装gcc-4.4.7
+   setRunmode(11)
+    oscmd.YumRemove softNames="gcc gcc-c++"
+   var packages="xz numactl unzip libaio libaio-devel gcc gcc-c++"
 }
 
-func b(str)
-{
-    print("aaaaa")
-    var dir = "mkdir " + str
-    print(dir)
-    var mm = oscmd.AddParamsToConf(command:dir)
-    print(mm["test"])
-     print("bbbbbb")
+oscmd.YumPackageInstall(softNames:packages,repoName:"MyData")
+
+#调整系统的内核参数
+var defaultAioMaxNrValue="1048576"
+var aioMaxNrName="fs.aio-max-nr"
+oscmd.SysCtl(value:defaultAioMaxNrValue,command:aioMaxNrName)
+
+#清理环境
+oscmd.Remove(filenamePattern:dataBaseDir,recursiveRemove:"true")
+#安装mysql
+ oscmd.AddGroup(groupName:"mysql")
+ oscmd.AddUser(userName:"mysql",groupName:"mysql")
+ oscmd.MakeDir(path:dataBaseDir)
+#记录clusterID
+ oscmd.MakeDir(path:dataBaseDir + "/checkpoint")
+ oscmd.Touch(path:dataBaseDir + "/checkpoint/cluster.id")
+ oscmd.TextToFile(filename:dataBaseDir + "/checkpoint/cluster.id",outText:"cluster_id=" + clusterID)
+var downloadPath = basicPath + "/zmysql/download"
+print(downloadPath)
+ oscmd.MakeDir(path:downloadPath)
+ oscmd.DownloadFile(url:url,outputFilename:downloadPath+ "/" + filename, md5:mysqlMd5)
+
+ oscmd.UnzipFile(directory:dataBaseDir,filename:downloadPath + "/" + filename)
+ oscmd.Move(source:dataBaseDir+ "/" + unzippedFilename,target:mysqlPath)
+ oscmd.MakeDir(path:mysqlConfDir)
+ oscmd.Touch(path:mysqlParameterFile)
+ oscmd.TextToFile(filename:mysqlParameterFile,outText:installInstance["conf_file_text"])
+ mysql.InitializeMySQLInstance(port:mysqlPort,mysqlPath:mysqlPath,dataBaseDir:dataBaseDir,serverId:serverId,socketFile:socketFile,mysqlDataDir:mysqlDataDir,user:"mysql",mysqlParameterFile:mysqlParameterFile)
+var cmdStrS = ""
+if osversion == "7"{
+     cmdStrS = mysql.StartupMySQLInstance(port:mysqlPort,mysqlPath:mysqlPath,mysqlDataDir:mysqlDataDir, socketFile:socketFile,user:"mysql", mysqlParameterFile:mysqlParameterFile, dbName:dbName, instanceName:instanceName)
 }
+if osversion == "6"{
+    cmdStrS = mysql.StartupMySQLInstance(port:mysqlPort,mysqlPath:mysqlPath,mysqlDataDir:mysqlDataDir,socketFile:socketFile,user:"mysql",mysqlParameterFile:mysqlParameterFile,dbName:dbName,instanceName:instanceName,mysqlRunWay:"mysqld_safe")
+}
+var cmdStr = cmdStrS["cmdStr"]
+print(cmdStr)
+var mysqlServiceName="zmysql_" + dbName + "_" +instanceName
+if osversion == "7"{
+     osservice.GenerateSystemdService(serviceName:mysqlServiceName,serviceDescription:mysqlServiceName,workingDirectory:mysqlPath,serviceCmdLine:cmdStr,runOrder:90)
+}
+if osversion == "6"{
+     oscmd.DownloadFile(url:osRepoUrl+ "/myconf_template",outputFilename:"/" + mysqlPath + "/myconf_template")
+     oscmd.Move(source:"/" + mysqlPath + "/myconf_template",target:"/" + mysqlPath+ "/" + mysqlServiceName)
+     oscmd.Move(source:"/" + mysqlPath + "/" + mysqlServiceName,target:"/etc/init.d/" + mysqlServiceName)
+    var sedStr=`
+    sed -i "/^basedir=$/s@basedir=@basedir:mysqlPath}@g" /etc/init.d/${mysqlServiceName}
+    `
+     oscmd.AddParamsToConf(command:sedStr)
+    var sedStr=`
+    sed -i "/^mycnf=$/s@mycnf=@mycnf:mysqlParameterFile@g" /etc/init.d/${mysqlServiceName}
+    `
+      oscmd.AddParamsToConf(command:sedStr)
+    var sedStr=`
+    sed -i "/^#description:$/s@description:@description:${mysqlServiceName}@g" /etc/init.d/${mysqlServiceName}
+    `
+     oscmd.AddParamsToConf(command:sedStr)
+     oscmd.ChangeMode(filenamePattern:"/etc/init.d/" + mysqlServiceName,modeExp:"755",recursiveChange:true)
+     osservice.GenerateSysVService(serviceName:mysqlServiceName,workingDirectory:mysqlPath,serviceCmdLine:cmdStr,runOrder:30,confDir:mysqlParameterFile)
+}
+
+#循环判断是否启动好了
+for i = 1;i<=20;i++{
+     var aliveS = mysql.InstanceAliveWithCode(mysqlPath:mysqlPath,socketFile:socketFile,user:mysqlUser)
+    print(aliveS)
+    var isAlive = aliveS["isAlive"]
+    print(isAlive)
+    if isAlive == "true"{
+        break
+    }
+    sleep(5000)
+}
+ mysql.MySQLInstanceAlive(mysqlPath:mysqlPath,socketFile:socketFile,user:mysqlUser)
+if addFlag == "true"{
+    return
+}
+var sqls="set global read_only=0;set global super_read_only=0;"
+ mysql.MySQLCmdSQL(cmdSql:sqls,mysqlPath:mysqlPath,socketFile:socketFile,user:mysqlUser)
+#var sqls="SET @@SESSION.SQL_LOG_BIN=0;delete from mysql.user where user not in ('mysql.infoschema','mysql.session','mysql.sys','root') or host !='localhost';CREATE USER 'root'@'%' IDENTIFIED BY '${mysqlRootPassword}';ALTER USER 'root'@'localhost' IDENTIFIED BY '${mysqlRootPassword}';GRANT ALL ON *.* TO 'root'@'%' WITH GRANT OPTION ;DROP DATABASE IF EXISTS test ;FLUSH PRIVILEGES ;"
+var sqls="SET @@SESSION.SQL_LOG_BIN=0;delete from mysql.user where user not in ('mysql.infoschema','mysql.session','mysql.sys','" + mysqlUser "') or host !='localhost';CREATE USER '" + mysqlUser "'@'%' IDENTIFIED BY '"mysqlRootPassword "';ALTER USER '" + mysqlUser "'@'localhost' IDENTIFIED BY '" + mysqlRootPassword"';GRANT ALL ON *.* TO '" + mysqlUser "'@'%' WITH GRANT OPTION ;DROP DATABASE IF EXISTS test ;FLUSH PRIVILEGES ;"
+ mysql.MySQLCmdSQL(cmdSql:sqls,mysqlPath:mysqlPath,socketFile:socketFile,user:mysqlUser)
+ oscmd.DisableFireWall()
+ oscmd.DisableSELinux() 
+ oscmd.ChangeOwnAndGroup(own:"mysql",group:"mysql",filenamePattern:dataBaseDir,recursiveChange:true)
